@@ -9,6 +9,7 @@ Simple font converter (.ttf/.otf -> unsigned char [Uint8_t]). Made in C++ with v
 
 # Usage
 - Simply drop any ttf or otf fonts into (C:/FontConverter)
+- Select font from a drop down
 - Press convert to generate a txt file with converted output
 
 # Author
