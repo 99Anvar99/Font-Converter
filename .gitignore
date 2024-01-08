@@ -13,3 +13,6 @@
 *.cache
 *.txt
 *.obj
+*.db-shm
+*.opendb
+*.db-wal
