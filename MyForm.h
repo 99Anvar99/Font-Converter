@@ -84,7 +84,7 @@ namespace $safeprojectname$ {
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(481, 29);
 			this->label1->TabIndex = 0;
-			this->label1->Text = L"Font TTF / OTF To Unsigned Char (Uint_8t)";
+			this->label1->Text = L"Font TTF / OTF To Unsigned Char (Uint8_t)";
 			// 
 			// comboBox1
 			// 
