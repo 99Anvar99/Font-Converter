@@ -1,4 +1,4 @@
-# C++ Font Conversion Utility
+# C++ Font Conversion
 
 A high-speed and straightforward C++ font converter that transforms TrueType (.ttf) and OpenType (.otf) font files into an array of unsigned characters [uint8_t]. Developed in C++ with a user-friendly interface using CppWinForms.
 
