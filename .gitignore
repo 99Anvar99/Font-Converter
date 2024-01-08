@@ -1,0 +1,15 @@
+
+*.vsidx
+.vs/Font_To_Uint_8t/v17/.suo
+*.db
+*.ipch
+*.log
+*.recipe
+*.resources
+*.metagen
+*.exe
+*.pdb
+*.tlog
+*.cache
+*.txt
+*.obj
