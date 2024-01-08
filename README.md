@@ -1,17 +1,21 @@
-# C++ Font-Converter
-A very fast and simple C++ font converter (.ttf/.otf -> unsigned char [uint8_t]). Made in C++ with visuals used from CppWinForms
+# C++ Font Conversion Utility
 
-![Image](https://github.com/99Anvar99/Font-Converter/blob/main/Image.png)
+A high-speed and straightforward C++ font converter that transforms TrueType (.ttf) and OpenType (.otf) font files into an array of unsigned characters [uint8_t]. Developed in C++ with a user-friendly interface using CppWinForms.
 
-# Compile
-- Open Font_To_Uint_8t.sln
-- Build
+![Application Image](https://github.com/99Anvar99/Font-Converter/blob/main/Image.png)
 
-# Usage
-- Start the app
-- Click the "Choose File" button
-- Select a file
-- Click the "Convert" button
-  
-# Author
-- 99Anvar99 (https://github.com/99Anvar99)
+## Compilation
+
+- Open the Font_To_Uint_8t.sln solution file.
+- Build the solution.
+
+## Usage
+
+1. Launch the application.
+2. Click the "Choose File" button.
+3. Select the desired font file.
+4. Click the "Convert" button.
+
+## Author
+
+- Developed by [99Anvar99](https://github.com/99Anvar99)
