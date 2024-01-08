@@ -217,6 +217,13 @@ namespace $safeprojectname$ {
 		{
 			try 
 			{
+				// Check if file exist and directory is not empty
+				if (comboBox1->Text == "Select Font" || comboBox1->Text == "" || comboBox1->Text == nullptr)
+				{
+					MessageBox::Show("Please select a font", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+					return;
+				}
+
 				const std::size_t bufferSize = 100000;
 
 				// Get selected font
