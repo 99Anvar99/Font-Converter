@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/99Anvar99/Font-Converter">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/ISO_C%2B%2B_Logo.svg/1200px-ISO_C%2B%2B_Logo.svg.png" alt="Logo" width="80" height="80">
+    <img src="https://github.com/99Anvar99/Font-Converter/assets/60616540/d1daa801-a9d5-40f0-9dc7-ed8da916a873" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Font-Converter</h3>
