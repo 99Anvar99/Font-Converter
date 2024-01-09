@@ -87,7 +87,7 @@ Contributions are what make the open source community such an amazing place to b
 
 ## License
 
-Distributed under the MIT License. See [LICENSE](https://github.com/99Anvar99/Font-Converter/LICENCE.md) for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/99Anvar99/Font-Converter/blob/main/LICENSE) for more information.
 
 ## Authors
 
