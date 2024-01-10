@@ -16,7 +16,7 @@
 
 namespace fs = std::filesystem;
 
-namespace $safeprojectname$ {
+namespace Font_To_Uint_8t {
 
 	using namespace System;
 	using namespace System::Data;
@@ -84,6 +84,7 @@ namespace $safeprojectname$ {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MyForm::typeid));
 			this->titleLabel = (gcnew System::Windows::Forms::Label());
 			this->pathLabel = (gcnew System::Windows::Forms::Label());
 			this->convertButton = (gcnew System::Windows::Forms::Button());
@@ -225,7 +226,8 @@ namespace $safeprojectname$ {
 			this->Controls->Add(this->convertButton);
 			this->Controls->Add(this->pathLabel);
 			this->Controls->Add(this->titleLabel);
-			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::None;
+			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::Fixed3D;
+			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 			this->MaximizeBox = false;
 			this->Name = L"MyForm";
 			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
