@@ -226,7 +226,7 @@ namespace Font_To_Uint_8t {
 			this->Controls->Add(this->convertButton);
 			this->Controls->Add(this->pathLabel);
 			this->Controls->Add(this->titleLabel);
-			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::Fixed3D;
+			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::None;
 			this->Icon = (cli::safe_cast<System::Drawing::Icon^>(resources->GetObject(L"$this.Icon")));
 			this->MaximizeBox = false;
 			this->Name = L"MyForm";
