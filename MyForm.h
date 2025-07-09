@@ -241,106 +241,132 @@ namespace Font_To_Uint_8t {
 
 		}
 #pragma endregion
-		private: System::Void convertButton_Click(System::Object^ sender, System::EventArgs^ e)
+		Void convertButton_Click(Object^ sender, System::EventArgs^ e)
 		{
 			try
 			{
-				const auto path = fs::path(marshal_as<std::string>(pathTextBox->Text));
-				const auto fileName = path.filename().string();
-				if (!fs::exists(path) || (!fileName.ends_with(".ttf") && !fileName.ends_with(".otf")))
+				// Validate input
+                if (String::IsNullOrEmpty(pathTextBox->Text)) 
 				{
-					ErrorInfo->ForeColor = Color::Red;
-					ErrorInfo->Visible = true;
-					ErrorInfo->Text = "Please select a valid font file!";
-					return;
-				}
+                    ErrorInfo->Text = "Please select a font file first!";
+                    return;
+                }
 
-				// Open the TTF file
-				std::ifstream ttfFile(path, std::ios::binary);
+                const auto path = fs::path(marshal_as<std::string>(pathTextBox->Text));
+                const auto file_name = path.filename().string();
+                
+                if (!exists(path)) 
+				{
+                    ErrorInfo->Text = "File does not exist!";
+                    return;
+                }
+                
+                if (!(file_name.ends_with(".ttf") || file_name.ends_with(".otf")))
+                {
+                    ErrorInfo->Text = "Please select a valid font file (.ttf or .otf)!";
+                    return;
+                }
 
-				if (!ttfFile.is_open()) {
-					ErrorInfo->ForeColor = Color::Red;
-					ErrorInfo->Visible = true;
-					ErrorInfo->Text = "Error opening file!";
-					return;
-				}
+                // Read file data
+                std::ifstream ttf_file(path, std::ios::binary | std::ios::ate);
+                if (!ttf_file) 
+				{
+                    ErrorInfo->Text = "Error opening file!";
+                    return;
+                }
 
-				// Get the size of the file
-				ttfFile.seekg(0, std::ios::end);
-				std::streampos fileSize = ttfFile.tellg();
-				ttfFile.seekg(0, std::ios::beg);
+                const auto file_size = ttf_file.tellg();
+                ttf_file.seekg(0, std::ios::beg);
 
-				// Read the file in chunks
-				std::vector<uint8_t> fontData;
-				fontData.resize(fileSize);
+                std::vector<uint8_t> font_data(file_size);
+                if (!ttf_file.read(reinterpret_cast<char*>(font_data.data()), file_size)) 
+				{
+                    ErrorInfo->Text = "Error reading file!";
+                    return;
+                }
 
-				std::size_t bytesRead = 0;
-				while (bytesRead < fileSize) {
-					constexpr std::size_t bufferSize = 100000;
-					ttfFile.read(reinterpret_cast<char*>(fontData.data() + bytesRead), bufferSize);
-					bytesRead += ttfFile.gcount();
-				}
+                // Create output directory if needed
+                const auto output_dir = fs::current_path() / "output";
+                if (!exists(output_dir)) 
+				{
+                    create_directory(output_dir);
+                }
 
-				// create output folder if its not existing
-				if (!fs::exists(fs::current_path() / "output"))
-					fs::create_directory(fs::current_path() / "output");
+                // Prepare output file
+                const auto result_path = output_dir / path.filename().replace_extension(".cpp");
+                std::ofstream out_file(result_path);
+                if (!out_file) 
+				{
+                    ErrorInfo->Text = "Error creating output file!";
+                    return;
+                }
 
-				// output stream
-				const auto resultPath = fs::current_path() / "output" / path.filename().replace_extension(".cpp");
-				std::ofstream outFile(resultPath);
+                // Convert and time the operation
+                auto start = std::chrono::high_resolution_clock::now();
+                
+                // Write header
+                out_file << "inline constexpr std::uint8_t " << path.filename().replace_extension().string() << "[" << file_size << "] = { ";
 
-				//clear txt file before writing in it (just in case to override)
-				outFile.clear();
+                // Write data with buffering for better performance
+                constexpr size_t buffer_size = 1024;
+                std::string buffer;
+                buffer.reserve(buffer_size * 10); // Reserve space for 10x buffer size
 
-				// Created a stopwatch
-				auto start = std::chrono::high_resolution_clock::now();
+                for (size_t i = 0; i < font_data.size(); ++i) 
+				{
+                    char hex[5];
+                    snprintf(hex, sizeof(hex), "0x%02X", font_data[i]);
+                    buffer.append(hex);
 
-				// Print the font data as hex
-				outFile << "inline constexpr std::uint8_t " << path.filename().replace_extension().string() << "[" << fileSize << "] = { ";
-				for (std::size_t i = 0; i < fileSize; ++i) {
-					outFile << "0x" << std::hex << std::uppercase << std::setfill('0') << std::setw(1) << static_cast<int>(fontData[i]);
-					if (i + 1 < fileSize)
-					{
-						outFile << ", ";
-					}
-				}
-				outFile << " };";
+                    if (i + 1 < font_data.size()) {
+                        buffer.append(", ");
+                    }
 
-				// Ended the stopwatch
-				auto end = std::chrono::high_resolution_clock::now();
-				// Calculated the elapsed time
-				auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+                    // Flush buffer when it's full
+                    if (buffer.size() >= buffer_size) {
+                        out_file << buffer;
+                        buffer.clear();
+                    }
+                }
 
-				OutputInfo->Visible = true;
+                // Write remaining data and footer
+                out_file << buffer << " };";
+                
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-				OutputInfo->Text = "Font: " + gcnew String(path.filename().replace_extension().wstring().c_str()) +
-               "\nConverted Font Size: " + System::Convert::ToString(fileSize) + " bytes\nConverted in: " + System::Convert::ToString(duration) + " ms";
+                // Update UI with results
+				OutputInfo->Text = String::Format("Font: {0}\nConverted Font Size: {1} bytes\nConverted in: {2} ms", gcnew String(file_name.c_str()), Convert::ToString(static_cast<int>(file_size)), Convert::ToString(static_cast<int>(duration)));
 
-				outFile.close();
-				ttfFile.close();
+                OutputInfo->Visible = true;
 
-				ErrorInfo->ForeColor = Color::Green;
-				ErrorInfo->Visible = true;
-				ErrorInfo->Text = "Font converted successfully!\nThe file has been saved in: \n" + gcnew String(resultPath.wstring().c_str());
+                ErrorInfo->ForeColor = Color::Green;
+                ErrorInfo->Text = String::Format("Font converted successfully!\nThe file has been saved in: \n{0}",
+                    gcnew String(result_path.wstring().c_str()));
+                ErrorInfo->Visible = true;
 
-				ShellExecuteW(nullptr, L"open", L"explorer.exe", (std::wstring(L"/select,") + resultPath.wstring()).c_str(), nullptr, SW_SHOW);
+                // Show the result in explorer
+                ShellExecuteW(nullptr, L"open", L"explorer.exe", 
+                    (std::wstring(L"/select,") + result_path.wstring()).c_str(), 
+                    nullptr, SW_SHOW);
 			}
-			catch (const std::exception& ex) {
+			catch (const std::exception& ex) 
+			{
 				MessageBox::Show("Error: " + gcnew String(ex.what()), "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
 			}
 		}
 
-		private: System::Void chooseFileButton_Click(System::Object^ sender, System::EventArgs^ e)
+		Void chooseFileButton_Click(Object^ sender, System::EventArgs^ e)
 		{
-			OpenFileDialog^ openFileDialog = gcnew OpenFileDialog();
+			auto open_file_dialog = gcnew OpenFileDialog();
 
-			openFileDialog->Filter = "All Files|*|Font Files (*.ttf, *.otf)|*.ttf;*.otf";
-			openFileDialog->FilterIndex = 2;
-			openFileDialog->RestoreDirectory = true;
+			open_file_dialog->Filter = "All Files|*|Font Files (*.ttf, *.otf)|*.ttf;*.otf";
+			open_file_dialog->FilterIndex = 2;
+			open_file_dialog->RestoreDirectory = true;
 
-			if (openFileDialog->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+			if (open_file_dialog->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 			{
-				pathTextBox->Text = openFileDialog->FileName;
+				pathTextBox->Text = open_file_dialog->FileName;
 			}
 
 			if (ErrorInfo->Visible)
@@ -352,16 +378,16 @@ namespace Font_To_Uint_8t {
 
 		// Form components
         bool isDragging = false;
-		System::Drawing::Point lastCursorPosition;
+		Point lastCursorPosition;
 
 		// Make the form draggable
-		private: System::Void MyForm_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) 
+		Void MyForm_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) 
 		{
 			isDragging = true;
             lastCursorPosition = e->Location;
 		}
 
-		private: System::Void MyForm_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) 
+		Void MyForm_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) 
 		{
 			if (isDragging)
 			{
@@ -371,37 +397,37 @@ namespace Font_To_Uint_8t {
             }
 		}
 
-		private: System::Void MyForm_MouseUp(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) 
+		Void MyForm_MouseUp(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) 
 		{
 			isDragging = false;
 		}
 
-		private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) 
+		Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) 
 		{
-			Panel^ topBorderPanel = gcnew Panel();
-			topBorderPanel->Dock = DockStyle::Top;
-			topBorderPanel->Height = 1;
-			topBorderPanel->BackColor = Color::White;
+			auto top_border_panel = gcnew Panel();
+			top_border_panel->Dock = DockStyle::Top;
+			top_border_panel->Height = 1;
+			top_border_panel->BackColor = Color::White;
 
-			Panel^ bottomBorderPanel = gcnew Panel();
-			bottomBorderPanel->Dock = DockStyle::Bottom;
-			bottomBorderPanel->Height = 1;
-			bottomBorderPanel->BackColor = Color::White;
+			auto bottom_border_panel = gcnew Panel();
+			bottom_border_panel->Dock = DockStyle::Bottom;
+			bottom_border_panel->Height = 1;
+			bottom_border_panel->BackColor = Color::White;
 
-			Panel^ leftBorderPanel = gcnew Panel();
-			leftBorderPanel->Dock = DockStyle::Left;
-			leftBorderPanel->Width = 1;
-			leftBorderPanel->BackColor = Color::White;
+			auto left_border_panel = gcnew Panel();
+			left_border_panel->Dock = DockStyle::Left;
+			left_border_panel->Width = 1;
+			left_border_panel->BackColor = Color::White;
 
-			Panel^ rightBorderPanel = gcnew Panel();
-			rightBorderPanel->Dock = DockStyle::Right;
-			rightBorderPanel->Width = 1;
-			rightBorderPanel->BackColor = Color::White;
+			auto right_border_panel = gcnew Panel();
+			right_border_panel->Dock = DockStyle::Right;
+			right_border_panel->Width = 1;
+			right_border_panel->BackColor = Color::White;
 
-			Controls->Add(topBorderPanel);
-			Controls->Add(bottomBorderPanel);
-			Controls->Add(leftBorderPanel);
-			Controls->Add(rightBorderPanel);
+			Controls->Add(top_border_panel);
+			Controls->Add(bottom_border_panel);
+			Controls->Add(left_border_panel);
+			Controls->Add(right_border_panel);
 
 			// Setting Title Text to the top center
 			titleLabel->Location = Point((ClientSize.Width - titleLabel->Width) / 2, titleLabel->Location.Y);
@@ -412,7 +438,8 @@ namespace Font_To_Uint_8t {
 			// Setting ConvertButton to the buttom center
 			convertButton->Location = Point((ClientSize.Width - convertButton->Width) / 2, ClientSize.Height - convertButton->Height - 10);
 		}
-		private: System::Void button2_Click(System::Object^ sender, System::EventArgs^ e) 
+
+		Void button2_Click(System::Object^ sender, System::EventArgs^ e) 
 		{
 			Application::Exit();
 		}
